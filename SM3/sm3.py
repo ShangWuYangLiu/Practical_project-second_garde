@@ -88,49 +88,55 @@ def sm3_cf(vi,bi):
     v_i=[A,B,C,D,E,F,G,H]
     return [v_i[i]^vi[i] for i in range(0,8)]
 
+#填充函数
+def fill(msg):
+    msg_bin = ''
+    for i in msg:
+        ascii_i = ord(i)
+        msg_bin = msg_bin + bin(ascii_i)[2:]
+    len1 = len(msg_bin)
+    msg_bin = msg_bin + '1'
+    k = 0
+    while 1:
+        if (len1 + 1 + k) % 512 == 448:
+            break
+        k = k + 1
+    msg_bin = msg_bin + '0' * k + bin(len1)[2:].zfill(64)
+    # 填充之后长度
+    len2 = len(msg_bin)
+    # 分组个数
+    num = ceil(len2 / 512)
+    temp = []
+    for i in range(0, len2, 8):
+        tmp = msg_bin[i:i + 8]
+        tmp = int(tmp, 2)
+        temp.append(tmp)
+    b = [0] * num
+    instate = []
+    for i in range(0, len(temp)):
+        instate.append(temp[i])
+        if (i + 1) % 64 == 0:
+            b[int(i / 64) - 1] = instate
+            instate = []
+    return b
+
 def sm3(msg):
     #消息填充,msg是字符串类型
-    msg_bin=''
-    for i in msg:
-        ascii_i=ord(i)
-        msg_bin=msg_bin+bin(ascii_i)[2:]
-
-    len1=len(msg_bin)
-    res=len1%64
-    msg_bin=msg_bin+'1'
-    k=0
-    while 1:
-        if (res+1+k)%512==448:
-            break
-        k=k+1
-    msg_bin=msg_bin+'0'*k+bin(len1)[2:].zfill(64)
-    #填充之后长度
-    len2=len(msg_bin)
-    #分组个数
-    num=ceil(len2/512)
-    temp=[]
-    for i in range(0,len2,8):
-        tmp=msg_bin[i:i+8]
-        tmp=int(tmp,2)
-        temp.append(tmp)
-    b=[0]*num
-    instate=[]
-    for i in range(0,len(temp)):
-        instate.append(temp[i])
-        if (i+1)%64==0:
-            b[int(i/64)-1]=instate
-            instate=[]
+    b=fill(msg)
     v=[]
-    for i in range(0,num):
+
+    for i in range(0,len(b)):
         if i==0:
             v.append(sm3_cf(V, b[i]))
         else:
-            v.append(sm3_cf(v[i-1],b[i]))
+            v[0]=sm3_cf(v[i-1],b[i])
+
     result=''
-    for i in range(0,num):
-        for j in range(0,8):
-            result=result+hex(v[i][j])[2:]
+    for j in range(0,8):
+        result=result+hex(v[0][j])[2:]
     return result
+
+
 #测试样例
 if __name__="__main__":
     print(sm3('123456789'))
