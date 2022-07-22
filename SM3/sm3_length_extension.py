@@ -2,10 +2,10 @@
 from math import ceil
 
 # 常量
-    T1 = [0x79cc4519]
-    T2 = [0x7a879d8a]
-    T = T1 * 16 + T2 * 48
-    V = [0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600, 0xa96f30bc, 0x163138aa, 0xe38dee4d, 0xb0fb0e4e]
+T1 = [0x79cc4519]
+T2 = [0x7a879d8a]
+T = T1 * 16 + T2 * 48
+V = [0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600, 0xa96f30bc, 0x163138aa, 0xe38dee4d, 0xb0fb0e4e]
 
 # 将消息(字符串)转换成二进制
 def msg2bin(msg):
