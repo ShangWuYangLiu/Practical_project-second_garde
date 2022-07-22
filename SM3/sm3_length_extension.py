@@ -1,10 +1,4 @@
-"""
-SM3长度扩展攻击
-    1.首先计算原消息(msg)的hash值
-    2.在msg+padding之后附加一段消息,用原消息的hash值作为IV计算附加消息之后的hash值,得到消息扩展后的hash1,用以与攻击得到的hash值对比验证攻击是否成功
-    3.用sm3加密伪造后的整体消息，得到hash2
-    4.验证hash1 与 hash2 是否相等
-"""
+
 from math import ceil
 
 # 常量
