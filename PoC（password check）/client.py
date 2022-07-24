@@ -45,10 +45,11 @@ def msg2int(msg):
 
 if __name__=='__main__':
     while 1:
-        #获得ID
+        #连接到服务器，注意ip地址和端口号
         client = socket(AF_INET, SOCK_STREAM)
         client.connect(('127.0.0.1', 12301))
         ph = PasswordHasher()
+        #生成自己的私钥（一个素数），为了便于计算，生成一个较小的素数
         a = sympy.randprime(10 ** 2, 10 ** 3)
         #随机情况
         up = get_random_uipi(1, 4, 6, 6, 9)
@@ -64,17 +65,19 @@ if __name__=='__main__':
         h = msg2int([testup_hash])
         v = pow(h[0], a)
         '''
+        #发送数据
         sdata=k+str(v)
         client.send(sdata.encode('utf-8'))
         data=client.recv(65536*16).decode('UTF-8', 'ignore')
+        #根据服务器端规定的数据格式解析数据
         if data[0]==' ':
             print("您的账户信息暂未泄露")
         else:
             data=eval(data)
-            if type(data[0]==str):
-                print("您的账户信息存在泄露风险,可能有1条账户信息已经泄露")
-            else:
+            if len(data[0][0])!=1:
                 num = len(data[0])
-                print("您的账户信息存在泄露风险,可能有{}条账户信息已经泄露".format(num))
+                print("查询结果：您的账户信息存在泄露风险,可能有{}个站点的账户信息已经泄露".format(num))
+            else:
+                print("查询结果：您的账户信息存在泄露风险,可能有{}个站点的账户信息已经泄露".format(1))
         break
     client.close()
