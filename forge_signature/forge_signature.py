@@ -1,7 +1,13 @@
 """
 forge a signature to pretend that you are Satoshi
-当验签算法在不验证m的情况下,能够伪造签名
-前提数据:Satoshi的公钥,这里我们通过随机生成来代替Satoshi的公钥
+在不验证m的情况下,能够伪造签名
+
+原理：
+
+r = x mod n
+e = rab^-1 mod n
+s = rb^-1 mod n
+
 """
 import secrets
 import random
@@ -10,107 +16,94 @@ from gmssl import sm3, func
 # 定义椭圆曲线参数、基点和阶
 A = 0
 B = 7
+
 G_X = 55066263022277343669578718895168534326250603453777594175500187360389116729240
 G_Y = 32670510020758816978083085130507043184471273380659243275938904335757337482424
 G = (G_X, G_Y)
+#有限域的阶
 P = 115792089237316195423570985008687907853269984665640564039457584007908834671663
+#椭圆曲线的阶
 N = 115792089237316195423570985008687907852837564279074904382605163141518161494337
 h = 1
 
+#扩展欧几里得算法:返回最大公因子和系数
+def extended_euclidean(a, b):
+    if a == b:
+        return (a, 1, 0)
+    else:
+        i = 0
+        a_list = [a]
+        b_list = [b]
+        q_list = []
+        r_list = []
+        while 1:
+            q_list.append(int(b_list[i]/a_list[i]))
+            r_list.append(b_list[i]%a_list[i])
+            b_list.append(a_list[i])
+            a_list.append(r_list[i])
+            i += 1
+            if r_list[i-1] == 0:
+                break
+        i -= 1
+        gcd = a_list[i]
+        x_list = [1]
+        y_list = [0]
+        i -= 1
+        all_steps = i
+        while i >= 0:
+            y_list.append(x_list[all_steps-i])
+            x_list.append(y_list[all_steps-i] - q_list[i]*x_list[all_steps-i])
+            i -= 1
+        return (gcd, x_list[-1], y_list[-1])#返回最后一个元素
 
-def inv(a, n):
-    '''求逆'''
-
-    def ext_gcd(a, b, arr):
-        '''扩展欧几里得算法'''
-        if b == 0:
-            arr[0] = 1
-            arr[1] = 0
-            return a
-        g = ext_gcd(b, a % b, arr)
-        t = arr[0]
-        arr[0] = arr[1]
-        arr[1] = t - int(a / b) * arr[1]
-        return g
-
-    arr = [0, 1, ]
-    gcd = ext_gcd(a, n, arr)
+def mod_inverse(j, n):
+    (gcd, x, y) = extended_euclidean(j, n)
     if gcd == 1:
-        return (arr[0] % n + n) % n
+        return x%n
     else:
         return -1
 
-
-# 椭圆曲线加法
-def EC_add(p, q):
-    # 0 means inf
+#椭圆曲线加法运算
+def elliptic_add(p, q):
     if p == 0 and q == 0:
-        return 0  # 0 + 0 = 0
+        return 0
     elif p == 0:
-        return q  # 0 + q = q
+        return q
     elif q == 0:
-        return p  # p + 0 = p
+        return p
     else:
-        if p[0] == q[0]:
-            if (p[1] + q[1]) % P == 0:
-                return 0  # mutually inverse
-            elif p[1] == q[1]:
-                return EC_double(p)
-        elif p[0] > q[0]:  # swap if px > qx
-            tmp = p
+        if p[0] > q[0]:#交换p、q
+            temp = p
             p = q
-            q = tmp
+            q = temp
         r = []
-        slope = (q[1] - p[1]) * inv(q[0] - p[0], P) % P  # 斜率
-        r.append((slope ** 2 - p[0] - q[0]) % P)
-        r.append((slope * (p[0] - r[0]) - p[1]) % P)
+        rel= (q[1] - p[1])*mod_inverse(q[0] - p[0], P) % P
+        r.append((rel*rel - p[0] - q[0]) % P)
+        r.append((rel*(p[0] - r[0]) - p[1]) % P)
         return (r[0], r[1])
 
-
-def EC_inv(p):
-    """椭圆曲线逆元"""
-    r = [p[0]]
-    r.append(P - p[1])
-    return r
-
-
-# 椭圆曲线减法:p - q
-def EC_sub(p, q):
-    q_inv = EC_inv(q)
-    return EC_add(p, q_inv)
-
-
-# 自加p+p
-def EC_double(p):
+#2P
+def elliptic_double(p):
     r = []
-    slope = (3 * p[0] ** 2 + A) * inv(2 * p[1], P) % P
-    r.append((slope ** 2 - 2 * p[0]) % P)
-    r.append((slope * (p[0] - r[0]) - p[1]) % P)
+    rel = (3*p[0]**2 + A)*mod_inverse(2*p[1], P) % P
+    r.append((rel*rel - 2*p[0])%P)
+    r.append((rel*(p[0] - r[0]) - p[1])%P)
     return (r[0], r[1])
 
-
-# 椭圆曲线多倍点运算
-def EC_multi(s, p):
-    """
-    :param s: 倍数
-    :param p: 点
-    :return: 运算结果
-    """
+#椭圆曲线乘法运算
+def elliptic_mult(s, p):
     n = p
-    r = 0
-    s_bin = bin(s)[2:]
-    s_len = len(s_bin)
-
-    for i in reversed(range(s_len)):  # 类快速幂思想
-        if s_bin[i] == '1':
-            r = EC_add(r, n)
-        n = EC_double(n)
-
+    r = 0 #无穷远点
+    s_binary = bin(s)[2:]
+    s_length = len(s_binary)
+    for i in reversed(range(s_length)):
+        if s_binary[i] == '1':
+            r = elliptic_add(r, n)
+        n = elliptic_double(n)
     return r
 
-
+#得到x的bit长度
 def get_bit_num(x):
-    """获得x的比特长度"""
     if isinstance(x, int):  # when int
         num = 0
         tmp = x >> 64
@@ -132,59 +125,50 @@ def get_bit_num(x):
         return len(x) << 3
     return 0
 
+#生成公私钥对
+def generate_key():
+    private_key = int(secrets.token_hex(32), 16)#生成一个十六进制格式的安全随机文本字符串
+    public_key = elliptic_mult(private_key, G)
+    return private_key, public_key
 
-# 产生公私钥对
-def key_gen():
-    sk = int(secrets.token_hex(32), 16)  # private key
-    pk = EC_multi(sk, G)  # public key
-    return sk, pk
-
-
-# ECDSA签名
-def ECDSA_sign(m, sk):
-    """ECDSA signature algorithm
-    :param m: message
-    :param sk: private key
-    :return signature: (r, s)
-    """
-    while 1:
-        k = secrets.randbelow(N)  # N is prime, then k <- Zn*
-        R = EC_multi(k, G)
-        r = R[0] % N  # Rx mod n
-        if r != 0:
-            break
-    e = sm3.sm3_hash(func.bytes_to_list(bytes(m, encoding='utf-8')))  # e = hash(m)
+#签名函数
+def sign(private_key, message, Z_A):
+    M = Z_A + message
+    M_b = bytes(M, encoding='utf-8')
+    e = sm3.sm3_hash(func.bytes_to_list(M_b))
     e = int(e, 16)
-    s = inv(k, N) * (e + sk * r) % N
+    k = secrets.randbelow(P)#生成安全的整数
+    random_point = elliptic_mult(k, G)
+    r = (e + random_point[0]) % N
+    s = (mod_inverse(1 + private_key, N) * (k - r * private_key)) % N
     return (r, s)
 
 
-# ECDSA验签:不使用message
-def ECDSA_verify_m_not_check(signature, e, pk):
+#验证签名（不使用message）
+def verify_no_msg(signature, e, pk):
     r, s = signature
-    x = EC_multi(inv(s, N), EC_add(EC_multi(e, G), EC_multi(r, pk)))
+    x = elliptic_mult(mod_inverse(s, N), elliptic_add(elliptic_mult(e, G), elliptic_mult(r, pk)))
     return x[0] % N == r
 
 
 # 伪造中本聪的签名
-def Pretend_Satoshi(pk):
+def pretend_Satoshi(pk):
     u = random.randrange(1, N - 1)
     v = random.randrange(1, N - 1)
-    R = EC_add(EC_multi(u, G), EC_multi(v, pk))
+    R = elliptic_add(elliptic_mult(u, G), elliptic_mult(v, pk))
     r = R[0] % N
-    e = (r * u * inv(v, N)) % N
-    s = (r * inv(v, N)) % N
+    e = (r * u * mod_inverse(v, N)) % N
+    s = (r * mod_inverse(v, N)) % N
     signature_forge = (r, s)
-    print("伪造的签名为:")
-    print((hex(r), hex(s)))
-    return ECDSA_verify_m_not_check(signature_forge, e, pk)
+    print("The forged signature is:")
+    print((hex(r)[2:], hex(s)[2:]))#去掉0x
+    return verify_no_msg(signature_forge, e, pk)
 
 
 if __name__ == '__main__':
-    # Satoshi的公私钥对,公钥公开可以获取
-    sk, pk = key_gen()
+    # Satoshi的公私钥对
+    sk, pk = generate_key()
+    print('='*135)
     # 伪造Satoshi的签名
-    print("="*75)
-    print("                   forge a signature to pretend that you are Satoshi                 ")
-    print("="*75)
-    print("伪造的签名是否是合法签名:", Pretend_Satoshi(pk))
+    print("Determining whether the forged signature is a legitimate signature:", pretend_Satoshi(pk))
+    print('='*135)
