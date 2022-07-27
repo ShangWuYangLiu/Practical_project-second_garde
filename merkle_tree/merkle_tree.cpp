@@ -6,22 +6,25 @@ using namespace std;
 int main()
 {
 	string check_str = "";
-	cout << "输入 Merkle Tree的叶子结点的数据，形式为：a b c d\n以~键作为结束符: " << endl;
 	vector<string> v;
-
-	while (1) //输入叶子节点
+	int i = 0;
+	//便于展示输出的代码
+	while (i<7) //输入叶子节点
 	{
 		string str;
-		cin >> str;
-		if (str != "~")
-		{
-			v.push_back(str);//在vector最后添加一个新元素
-		}
-		else
-		{
-			break;
-		}
+		str = to_string(i);
+		v.push_back(str);//在vector最后添加一个新元素
+		i++;
 	}
+	//10w叶子节点代码
+	//while (i < 10000)
+	//{
+	//	string str;
+	//	str = to_string(i);
+	//	v.push_back(str);//在vector最后添加一个新元素
+	//  i++;
+	//}
+
 	tree ntree;
 	ntree.buildBaseLeafes(v);
 	cout << "构建Merkle树过程:" << endl << endl;
