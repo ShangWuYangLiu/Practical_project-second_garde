@@ -1,6 +1,6 @@
 # Impl Merkle Tree following RFC6962
 
-**项目要求**
+**项目内容**
 
 1.构建一个有10w个叶子节点的Merkle Tree
 
@@ -8,21 +8,27 @@
 
 3.有验证节点不存在功能
 
-**Bitcoin’s Merkle Tree**
+**实验原理**
+
+1.Bitcoin’s Merkle Tree
 
 当叶子节点个数为奇数时，会复制最后一个叶子节点使得节点个数为偶数，如下图：
 
 ![image](https://user-images.githubusercontent.com/105548921/180649579-0fe570a3-34ae-406a-800a-d6fc7c54c67a.png)
 
-**Merkle Tree（RFC 6962）**
+2.Merkle Tree（RFC 6962）
 
 允许叶子节点个数为奇数，如下图：
 
 ![image](https://user-images.githubusercontent.com/105548921/180649667-76d9312b-a120-4761-b604-aac7a43b93f0.png)
 
-**二者实现差异**
+**运行指导**
 
-二者的实现差异主要在构建Merkle Tree的过程中：（项目要求节点个数为10w个，此处为了方便展示结果，叶子节点个数较少）
+添加tree.h、sha256.h、node.h作为头文件，运行merkle_tree.cpp即可
+
+**代码说明和测试结果**
+
+代码基于Bitcoin’s Merkle Tree进行改写，而二者的实现差异主要在构建Merkle Tree的过程中：（项目要求节点个数为10w个，此处为了方便展示结果，叶子节点个数较少）
 
 1.如果叶子节点个数为偶数，首先将叶子节点两两合并，合并之后，节点个数减半，树的高度加一，然后在树新的一层再进行合并，直到只剩下一个节点，即根节点。测试结果如下：（实现了验证节点存在功能）
 
