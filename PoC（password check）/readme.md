@@ -1,12 +1,20 @@
-# Password Check
+# PoC impl of the scheme, or do implement analysis by Google
 
-**项目介绍**
+**项目内容**
 
 按照下图所示步骤，自行编写代码，要求实现根据用户提供的数据检测账户信息是否泄露的功能。
 
 ![image](https://user-images.githubusercontent.com/105548921/180647923-0b1df700-9da9-4914-95b3-71a84c89cde0.png)
 
-**实现方法概述**
+**实验原理**
+
+1.服务器端维护着自己的一个数据库，根据k的取值将数据库划分成几个大的集合
+
+2.客户端向服务器发送（k，v），服务器根据客户端发送来的k在自己的数据库中进行检索，如果k是属于某一个集合的，服务器将（v^b，S）发送给客户端
+
+3.客户端经过一些步骤处理后，确定自己的账户信息是否存在风险
+
+**代码说明**
 
 1.使用python实现，首先安装argon2-cffi库（pip install argon2-cffi）
 
@@ -14,11 +22,15 @@
 
 3.代码根据上图步骤编写即可，且在server.py和client.py中有详细的注释说明
 
+**运行指导**
+
+1.运行server.py
+
+2.运行client.py
+
 **测试结果**
 
-1.首先运行server.py，再运行client.py
-
-2.用户随机生成自己的id和password进行测试，结果如下：
+1.用户随机生成自己的id和password进行测试，结果如下：
 
 server.py运行结果：
 
@@ -28,7 +40,7 @@ client.py运行结果：
 
 ![image](https://user-images.githubusercontent.com/105548921/180648335-b0d68be5-b895-4a00-b556-35733bb18568.png)
 
-3.在服务器端中的数据库加入一次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试（服务器端和客户端需要将注释为测试代码的部分取消注释，同时客户端要注释为随机情况的代码段注释掉），结果如下：
+2.在服务器端中的数据库加入一次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试（服务器端和客户端需要将注释为测试代码的部分取消注释，同时客户端要注释为随机情况的代码段注释掉），结果如下：
 
 server.py运行结果：
 
@@ -38,7 +50,7 @@ client.py运行结果：
 
 ![image](https://user-images.githubusercontent.com/105548921/180648771-b3fca19a-3781-41c6-a4bc-952117c99f45.png)
 
-4.在服务器端中的数据库加入多次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试，结果如下：
+3.在服务器端中的数据库加入多次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试，结果如下：
 
 server.py运行结果：
 
