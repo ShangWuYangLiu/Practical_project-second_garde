@@ -2,11 +2,11 @@ import secrets
 from hashlib import sha256
 from gmssl import sm3, func
 
-#y^2=x^3+7
+
 A = 0
 B = 7
 #有限域的阶
-P = 115792089237316195423570985008687907853269984665640564039457584007908834671663
+Q = 115792089237316195423570985008687907853269984665640564039457584007908834671663
 #椭圆曲线的阶
 N = 115792089237316195423570985008687907852837564279074904382605163141518161494337
 G_X = 55066263022277343669578718895168534326250603453777594175500187360389116729240
@@ -24,36 +24,36 @@ def legendre(y,p):#返回y^(p-1)/2 mod p的值
     参考博客：https://blog.csdn.net/qq_51999772/article/details/122642868
 '''
 
-def Tonelli_Shanks(y,p):
-    assert legendre(y,p) == 1 #若不等于1，触发异常
+def Tonelli_Shanks(n, p):
+    assert legendre(n, p) == 1
     if p % 4 == 3:
-        return pow(y,int((p+1)/4),p)
+        return pow(n, (p + 1) // 4, p)
     q = p - 1
     s = 0
     while q % 2 == 0:
-        q = int(q/2)
-        s =s+1
-    for i in range(2,p):
-        if legendre(i,p) == p - 1:
-            c = pow(i,q,p)
+        q = q // 2
+        s += 1
+    for z in range(2, p):
+        if legendre(z, p) == p - 1:
+            c = pow(z, q, p)
             break
-    r = pow(y,int((q+1)/2),p)
-    t = pow(y,q,p)
+    r = pow(n, (q + 1) // 2, p)
+    t = pow(n, q, p)
     m = s
     if t % p == 1:
         return r
     else:
         i = 0
-        while t % p != 1:
-            temp = pow(t,pow(2,i+1),p)
+        while t % p != 1:  # 外层循环的判断条件
+            temp = pow(t, 2 ** (i + 1), p)  # 这里写作i+1是为了确保之后内层循环用到i值是与这里的i+1的值是相等的
             i += 1
-            if temp % p == 1:
-                b = pow(c,pow(2,m - i - 1),p)
-                r = (r * b) % p
-                c = (b * b) % p
-                t = (t * c) % p
+            if temp % p == 1:  # 内层循环的判断条件
+                b = pow(c, 2 ** (m - i - 1), p)
+                r = r * b % p
+                c = b * b % p
+                t = t * c % p
                 m = i
-                i = 0
+                i = 0  # 注意每次内层循环结束后i值要更新为0
         return r
 
 #扩展欧几里得算法:返回最大公因子和系数
@@ -112,10 +112,10 @@ def elliptic_add(p, q):
             p = q
             q = temp
         r = []
-        rel= (q[1] - p[1])*mod_inverse(q[0] - p[0], P) % P
+        rel= (q[1] - p[1])*mod_inverse(q[0] - p[0], Q) % Q
 
-        r.append((rel*rel - p[0] - q[0]) % P)
-        r.append((rel*(p[0] - r[0]) - p[1]) % P)
+        r.append((rel*rel - p[0] - q[0]) % Q)
+        r.append((rel*(p[0] - r[0]) - p[1]) % Q)
 
         return (r[0], r[1])
 
@@ -123,10 +123,10 @@ def elliptic_add(p, q):
 def elliptic_double(p):
     r = []
 
-    rel = (3*p[0]**2 + A)*mod_inverse(2*p[1], P) % P
+    rel = (3*p[0]**2 + A)*mod_inverse(2*p[1], Q) % Q
 
-    r.append((rel*rel - 2*p[0])%P)
-    r.append((rel*(p[0] - r[0]) - p[1])%P)
+    r.append((rel*rel - 2*p[0])%Q)
+    r.append((rel*(p[0] - r[0]) - p[1])%Q)
 
     return (r[0], r[1])
 
@@ -195,7 +195,7 @@ def sign(private_key, message, Z_A):
     M_b = bytes(M, encoding='utf-8')
     e = sm3.sm3_hash(func.bytes_to_list(M_b))
     e = int(e, 16)
-    k = secrets.randbelow(P)
+    k = secrets.randbelow(Q)
     random_point = elliptic_mult(k, G)
     r = (e + random_point[0]) % N
     s = (mod_inverse(1 + private_key, N) * (k - r * private_key)) % N
@@ -226,15 +226,16 @@ def verify(public_key, ID, message, signature):
 if __name__ == '__main__':
     prikey, pubkey = generate_key()
     message = "202000460012"
-    print('='*75)
+    print('='*175)
     print("消息为:",message)
-    print('='*75)
+    print('='*175)
     print('公钥为：', pubkey)
     ID = '1234567812345678'#sm2使用固定值
     Z_A = pre_compute(ID, A, B, G_X, G_Y, pubkey[0], pubkey[1])
     signature = sign(prikey, message, str(Z_A))
-    print('=' * 75)
+    print('=' * 175)
     print("签名为: ", signature)
+    #此处signature中的r、s是数字方便verify
     if verify(pubkey, ID, message, signature) == 1:
-        print('=' * 75)
-        print('验证结果:True')
+        print('=' * 175)
+        print('验证签名:True')
