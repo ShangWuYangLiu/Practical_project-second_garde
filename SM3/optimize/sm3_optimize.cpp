@@ -253,10 +253,7 @@ void sm3_cf_optimize(SM3::SM3Context* context)
 }
 
 /*
-* SM3算法主函数:
-	message代表需要加密的消息字节串;
-	messagelen是消息的字节数;
-	digset表示返回的哈希值
+SM3算法主函数:message代表需要加密的消息字节串;messagelen是消息的字节数;digset表示返回的哈希值
 */
 unsigned char* SM3::SM3_optimize(unsigned char* message,
 	unsigned int messageLen, unsigned char digest[SM3_HASH_SIZE])
