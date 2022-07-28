@@ -1,4 +1,3 @@
-
 import secrets
 from gmssl import sm3, func
 
@@ -13,45 +12,25 @@ N = 1157920892373161954235709850086879078528375642790749043826051631415181614943
 h = 1
 
 
-#扩展欧几里得算法:返回最大公因子和系数
-def extended_euclidean(a, b):
-    if a == b:
-        return (a, 1, 0)
-    else:
-        i = 0
-        a_list = [a]
-        b_list = [b]
-        q_list = []
-        r_list = []
-        tag = False
-        while not (tag):
-            q_list.append(int(b_list[i]/a_list[i]))
-            r_list.append(b_list[i]%a_list[i])
-            b_list.append(a_list[i])
-            a_list.append(r_list[i])
-            i += 1
-            if r_list[i-1] == 0:
-                tag = True
-        i -= 1
-        gcd = a_list[i]
-        x_list = [1]
-        y_list = [0]
+#扩展欧几里得算法
+def extended_euclidean(a, b, arr):
+    if b == 0:
+        arr[0] = 1
+        arr[1] = 0
+        return a
+    g = extended_euclidean(b, a % b, arr)
+    t = arr[0]
+    arr[0] = arr[1]
+    arr[1] = t - int(a / b) * arr[1]
+    return g
 
-        i -= 1
-        all_steps = i
-
-        while i >= 0:
-            y_list.append(x_list[all_steps-i])
-            x_list.append(y_list[all_steps-i] - q_list[i]*x_list[all_steps-i])
-            i -= 1
-
-        return (gcd, x_list[-1], y_list[-1])#返回最后一个元素
 
 #求逆
-def mod_inverse(j, n):
-    (gcd, x, y) = extended_euclidean(j, n)
+def mod_inverse(a, n):
+    arr = [0, 1, ]
+    gcd = extended_euclidean(a, n, arr)
     if gcd == 1:
-        return x%n
+        return (arr[0] % n + n) % n
     else:
         return -1
 
