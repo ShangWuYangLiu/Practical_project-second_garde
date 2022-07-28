@@ -193,31 +193,31 @@ if __name__ == "__main__":
     print('='*80)
     # 计算原消息的hash值
     msg = "abcd1234"
-    print("The original message is:",msg)
-    print("The hex of the original message is:", msg2hex(msg))
+    print("原消息:",msg)
+    print("原消息的16进制:", msg2hex(msg))
     msg_fill = fill(msg2bin(msg))
     msg_hash = sm3(msg_fill)
-    print("The hash of the original message is:", msg_hash)
+    print("原消息的hash值:", msg_hash)
     print('='*80)
-    # 将新的IV设置为原消息的hash值
+    # 将新IV设置为原消息的hash值
     new_iv = []
     for i in range(0,len(msg_hash),8):
         new_iv.append(int(msg_hash[i:i+8], 16))
     #附加消息
     addm = "hello world"  # 附加消息
-    print("The additional message is:", addm)
-    print("The hex of the additional message is:", msg2hex(addm))
+    print("附加消息:", addm)
+    print("附加消息的16进制:", msg2hex(addm))
     # 计算附加消息之后的hash值
     guess_hash = sm3_lenattack_hash(msg_fill, msg2bin(addm), new_iv)
-    print("The hash of the additional message is:", guess_hash)
+    print("构造的消息的hash值:", guess_hash)
     print('='*80)
     # 计算人为构造新消息
     new_msg = msg_fill + msg2bin(addm)
-    print("Constructed hex for the new message:",bin2hex(new_msg))
+    print("人为构造新消息的16进制:",bin2hex(new_msg))
     # 计算扩展后新消息的hash值
     new_msg_fill = fill(new_msg)
     new_hash = sm3(new_msg_fill)
-    print("The hash value of the constructed new message is:", new_hash)
+    print("人为构造新消息的hash值:", new_hash)
     print('='*80)
     # 验证攻击是否成功
-    print("Verify that the attack was successful:",guess_hash == new_hash)
+    print("验证是否攻击成功:",guess_hash == new_hash)
