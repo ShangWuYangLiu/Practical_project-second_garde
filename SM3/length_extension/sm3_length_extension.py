@@ -1,4 +1,3 @@
-
 from math import ceil
 
 # 常量
@@ -68,9 +67,7 @@ def p0(x):
     ret = x ^ (shift_left(x, 9)) ^ (shift_left(x, 17))
     return ret
 
-
-# 压缩函数cf
-def sm3_cf(vi, bi):
+def processmsg(bi):
     # 消息扩展
     w = []
     # w列表都是十进制整数
@@ -92,23 +89,32 @@ def sm3_cf(vi, bi):
     for k in range(0, 64):
         tmp = w[k] ^ w[k + 4]
         w1.append(tmp)
+
+    return w,w1
+
+def oneround(j,A,B,C,D,E,F,G,H,w,w1):
+    ss1 = shift_left((shift_left(A, 12)) ^ E ^ (shift_left(T[j], j % 32)), 7)
+    #
+    ss2 = ss1 ^ shift_left(A, 12)
+    tt1 = ff(A, B, C, j) ^ D ^ ss2 ^ w1[j]
+    tt2 = gg(E, F, G, j) ^ H ^ ss1 ^ w[j]
+    D = C
+    C = shift_left(B, 9)
+    B = A
+    A = tt1
+    H = G
+    G = shift_left(F, 19)
+    F = E
+    E = p0(tt2)
+    return A,B,C,D,E,F,G,H
+
+# 压缩函数cf
+def sm3_cf(vi, bi):
+    w,w1=processmsg(bi)
     A, B, C, D, E, F, G, H = vi
     # 64轮加密
     for j in range(0, 64):
-        #
-        ss1 = shift_left((shift_left(A, 12)) ^ E ^ (shift_left(T[j], j % 32)), 7)
-        #
-        ss2 = ss1 ^ shift_left(A, 12)
-        tt1 = ff(A, B, C, j) ^ D ^ ss2 ^ w1[j]
-        tt2 = gg(E, F, G, j) ^ H ^ ss1 ^ w[j]
-        D = C
-        C = shift_left(B, 9)
-        B = A
-        A = tt1
-        H = G
-        G = shift_left(F, 19)
-        F = E
-        E = p0(tt2)
+        A,B,C,D,E,F,G,H=oneround(j,A,B,C,D,E,F,G,H,w,w1)
     v_i = [A, B, C, D, E, F, G, H]
     return [v_i[i] ^ vi[i] for i in range(0, 8)]
 
@@ -187,31 +193,31 @@ if __name__ == "__main__":
     print('='*80)
     # 计算原消息的hash值
     msg = "abcd1234"
-    print("原消息:",msg)
-    print("原消息的16进制:", msg2hex(msg))
+    print("The original message is:",msg)
+    print("The hex of the original message is:", msg2hex(msg))
     msg_fill = fill(msg2bin(msg))
     msg_hash = sm3(msg_fill)
-    print("原消息的hash值:", msg_hash)
+    print("The hash of the original message is:", msg_hash)
     print('='*80)
-    # 将初始IV设置为原消息的hash值
+    # 将新的IV设置为原消息的hash值
     new_iv = []
     for i in range(0,len(msg_hash),8):
         new_iv.append(int(msg_hash[i:i+8], 16))
     #附加消息
     addm = "hello world"  # 附加消息
-    print("附加消息:", addm)
-    print("附加消息的16进制:", msg2hex(addm))
+    print("The additional message is:", addm)
+    print("The hex of the additional message is:", msg2hex(addm))
     # 计算附加消息之后的hash值
     guess_hash = sm3_lenattack_hash(msg_fill, msg2bin(addm), new_iv)
-    print("构造的消息的hash值:", guess_hash)
+    print("The hash of the additional message is:", guess_hash)
     print('='*80)
     # 计算人为构造新消息
     new_msg = msg_fill + msg2bin(addm)
-    print("人为构造新消息的16进制:",bin2hex(new_msg))
+    print("Constructed hex for the new message:",bin2hex(new_msg))
     # 计算扩展后新消息的hash值
     new_msg_fill = fill(new_msg)
     new_hash = sm3(new_msg_fill)
-    print("人为构造新消息的hash值:", new_hash)
+    print("The hash value of the constructed new message is:", new_hash)
     print('='*80)
     # 验证攻击是否成功
-    print("验证是否攻击成功:",guess_hash == new_hash)
+    print("Verify that the attack was successful:",guess_hash == new_hash)
