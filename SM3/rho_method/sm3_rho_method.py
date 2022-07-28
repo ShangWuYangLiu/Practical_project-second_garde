@@ -4,14 +4,14 @@ import time
 
 # 实现部分bit的hash碰撞
 # 二进制位数
-bin_length = 12
+bit_length = 16
 # 十六进制位数
-hex_length = bin_length // 4
+hex_length = bit_length // 4
 
 
 def rho_method():
     # 生成随机数
-    x = str(random.randint(0, pow(2, bin_length)))
+    x = str(random.randint(0, pow(2, bit_length)))
     # x_a = x_1
     x_a = sm3.sm3_hash(func.bytes_to_list(bytes(x, encoding='utf-8')))
     # x_b = x_2
@@ -27,16 +27,16 @@ def rho_method():
         temp = sm3.sm3_hash(func.bytes_to_list(bytes(x_b, encoding='utf-8')))
         x_b = sm3.sm3_hash(func.bytes_to_list(bytes(temp, encoding='utf-8')))
         msg2 = temp
-    print("消息1:", msg1)
-    print("消息1的hash值:", sm3.sm3_hash(func.bytes_to_list(bytes(msg1, encoding='utf-8'))))
+    print("message 1:", msg1)
+    print("The hash value of message 1:", sm3.sm3_hash(func.bytes_to_list(bytes(msg1, encoding='utf-8'))))
     print()
-    print("消息2:", msg2)
-    print("消息2的hash值:", sm3.sm3_hash(func.bytes_to_list(bytes(msg2, encoding='utf-8'))))
+    print("message 2:", msg2)
+    print("The hash value of message 2:", sm3.sm3_hash(func.bytes_to_list(bytes(msg2, encoding='utf-8'))))
 
 
 if __name__ == '__main__':
     print("="*75)
-    print("部分比特的hash（{}bits）值碰撞:".format(bin_length))
+    print("Collision of hash ({}bits) values of some bits:".format(bit_length))
     print()
     start = time.time()
     rho_method()
