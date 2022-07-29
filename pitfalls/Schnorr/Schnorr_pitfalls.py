@@ -18,7 +18,7 @@ def Schnorr_sign_and_assign_k(k, M, sk):
     """
     :return signature: (R, s)
     """
-    R = EC_multi(k, G)
+    R = elliptic_mult(k, G)
     tmp = str(R[0]) + str(R[1]) + M
     e = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
     s = k + e * sk % N
@@ -32,11 +32,11 @@ def ECDSA_sign_and_assign_k(k, m, sk):
     :param sk: private key
     :return signature: (r, s),k
     """
-    R = EC_multi(k, G)
+    R = elliptic_mult(k, G)
     r = R[0] % N  # Rx mod n
     e = sm3.sm3_hash(func.bytes_to_list(bytes(m, encoding='utf-8')))  # e = hash(m)
     e = int(e, 16)
-    tmp1 = inv(k, N)
+    tmp1 = mod_inverse(k, N)
     tmp2 = (e + sk * r) % N
     s = tmp1 * tmp2 % N
     return (r, s)
@@ -47,7 +47,7 @@ def ECDSA_sign_and_assign_k(k, m, sk):
 # k的泄露会导致泄露d
 def Schnorr_leaking_k():
     # Alice生成公私钥对并对消息进行签名
-    sk, pk = key_gen()  # A publish pk for others to verify
+    sk, pk = generate_key()  # A publish pk for others to verify
     print("Alice的私钥为:", "0x" + hex(sk)[2:].rjust(64, '0'))
     message_A = "message of A"
     k = secrets.randbelow(N)  # 该k为泄露的k
@@ -58,7 +58,7 @@ def Schnorr_leaking_k():
     R, s = signature
     tmp = str(R[0]) + str(R[1]) + message_A
     e = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
-    d = (s - k % N) * inv(e, N) % N
+    d = (s - k % N) * mod_inverse(e, N) % N
     print("Bob推测的d为:", '0x' + hex(d)[2:].rjust(64, '0'))
     # 验证Bob得到的d是否与Alice的sk相等
     print("验证Bob推测的d是否与Alice的sk相等:", True if d == sk else False)
@@ -79,7 +79,7 @@ def Schnorr_leaking_k():
 # 对不同的消息使用相同的k进行签名会泄露d
 def Schnorr_reusing_k():
     # Alice使用相同的k生成两个消息的签名
-    sk, pk = key_gen()  # A publish pk for others to verify
+    sk, pk = generate_key()  # A publish pk for others to verify
     print("Alice的私钥为:", "0x" + hex(sk)[2:].rjust(64, '0'))
     message_A1 = "message1 of A"
     message_A2 = "message2 of A"
@@ -96,7 +96,7 @@ def Schnorr_reusing_k():
     e1 = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
     tmp = str(R[0]) + str(R[1]) + message_A2
     e2 = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
-    d = ((s1 - s2) % N) * inv((e1 - e2), N) % N
+    d = ((s1 - s2) % N) * mod_inverse((e1 - e2), N) % N
     print("Bob推测的d为:", '0x' + hex(d)[2:].rjust(64, '0'))
     print("验证Bob推测的d是否与Alice的sk相等:", True if d == sk else False)
     # Bob根据推测的d伪造Alice的签名
@@ -117,12 +117,12 @@ def same_k_of_different_users():
     # Alice和Bob使用相同的k分别生成消息签名
     k = secrets.randbelow(N)  # 相同的k值
     # Alice
-    sk_A, pk_A = key_gen()  # A publish pk for others to verify
+    sk_A, pk_A = generate_key()  # A publish pk for others to verify
     print("Alice的私钥为:", "0x" + hex(sk_A)[2:].rjust(64, '0'))
     message_A = "message of A"
     signature_A = Schnorr_sign_and_assign_k(k, message_A, sk_A)
     # Bob
-    sk_B, pk_B = key_gen()  # A publish pk for others to verify
+    sk_B, pk_B = generate_key()  # A publish pk for others to verify
     print("Bob的私钥为:", "0x" + hex(sk_B)[2:].rjust(64, '0'))
     message_B = "message of B"
     signature_B = Schnorr_sign_and_assign_k(k, message_B, sk_B)
@@ -132,7 +132,7 @@ def same_k_of_different_users():
     R1, s1 = signature_A
     tmp = str(R1[0]) + str(R1[1]) + message_A
     e1 = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
-    d_A = (s1 - k % N) * inv(e1, N) % N
+    d_A = (s1 - k % N) * mod_inverse(e1, N) % N
     print("Bob推测的Alice的d为:", '0x' + hex(d_A)[2:].rjust(64, '0'))
 
     # Alice通过Bob的signature、message以及k推测Bob的d即私钥
@@ -140,7 +140,7 @@ def same_k_of_different_users():
     R2, s2 = signature_B
     tmp = str(R2[0]) + str(R2[1]) + message_B
     e2 = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
-    d_B = (s2 - k % N) * inv(e2, N) % N
+    d_B = (s2 - k % N) * mod_inverse(e2, N) % N
     print("Alice推测的Bob的d为:", '0x' + hex(d_B)[2:].rjust(64, '0'))
 
     # 验证Alice和Bob的猜测是否正确
@@ -153,12 +153,12 @@ def same_k_of_different_users():
 # 即验证(r,s) and (r,-s)均为合法签名
 def verify_Malleability():
     # Alice生成消息签名
-    sk, pk = key_gen()  # A publish pk for others to verify
+    sk, pk = generate_key()  # A publish pk for others to verify
     message = "message of A"
     signature = Schnorr_sign(message, sk)
     r, s = signature
     signature_test = (r, -s)
-    print("验证(r,-s)是否是合法签名:", True if Schnorr_verify(signature_test, message, pk) == 1 else Flase)
+    print("验证(r,-s)是否是合法签名:", True if Schnorr_verify(signature_test, message, pk) == 1 else False)
 
 
 # ----------------------------------------------------------------------------------- #
@@ -166,7 +166,7 @@ def verify_Malleability():
 # ECDSA与Schnorr使用相同的d和k而泄露d
 def same_dk_of_ECDSA_Schnorr():
     # same d and k
-    sk, pk = key_gen()
+    sk, pk = generate_key()
     print("共同的私钥为:", "0x" + hex(sk)[2:].rjust(64, '0'))
     k = secrets.randbelow(N)
     # ECDSA签名
@@ -183,9 +183,9 @@ def same_dk_of_ECDSA_Schnorr():
     e1 = int(sm3.sm3_hash(func.bytes_to_list(bytes(message1, encoding='utf-8'))), 16)
     tmp = str(R[0]) + str(R[1]) + message2
     e2 = int(sm3.sm3_hash(func.bytes_to_list(bytes(tmp, encoding='utf-8'))), 16)
-    tmp1 = (s2 - inv(s1, N) * e1) % N
-    tmp2 = (inv(s1, N) * r + e2) % N
-    d = tmp1 * inv(tmp2, N) % N
+    tmp1 = (s2 - mod_inverse(s1, N) * e1) % N
+    tmp2 = (mod_inverse(s1, N) * r + e2) % N
+    d = tmp1 * mod_inverse(tmp2, N) % N
     print("推测的d为:", "0x" + hex(d)[2:].rjust(64, '0'))
     print("验证推测的d是否与sk相等:", True if d == sk else False)
 
