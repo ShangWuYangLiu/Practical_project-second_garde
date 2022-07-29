@@ -34,28 +34,19 @@
 
 server.py运行结果：
 
-![image](https://user-images.githubusercontent.com/105548921/180648366-2b60e122-d266-476b-99ea-53abc7fae494.png)
+![image](https://user-images.githubusercontent.com/105548921/181724067-6eda6cf6-31cd-46d5-aa0f-d26506b93d39.png)
 
 client.py运行结果：
 
-![image](https://user-images.githubusercontent.com/105548921/180648335-b0d68be5-b895-4a00-b556-35733bb18568.png)
+![image](https://user-images.githubusercontent.com/105548921/181724045-0ad53a22-7848-4d57-9973-fe5a2a1a9bec.png)
 
-2.在服务器端中的数据库加入一次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试（服务器端和客户端需要将注释为测试代码的部分取消注释，同时客户端要注释为随机情况的代码段注释掉），结果如下：
+2.在服务器端中的数据库加入多次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试（服务器端和客户端需要将注释为测试代码的部分取消注释，同时客户端要注释为随机情况的代码段注释掉），结果如下：
 
 server.py运行结果：
 
-![image](https://user-images.githubusercontent.com/105548921/180648466-d438882b-b5e6-45bf-8a91-ff9c224dc43a.png)
+![image](https://user-images.githubusercontent.com/105548921/181723965-aafa77a6-1aba-424c-9c03-c0dfc49db445.png)
 
 client.py运行结果：
 
-![image](https://user-images.githubusercontent.com/105548921/180648771-b3fca19a-3781-41c6-a4bc-952117c99f45.png)
+![image](https://user-images.githubusercontent.com/105548921/181723892-82f49634-71f4-4053-b64d-abffca7fc1c2.png)
 
-3.在服务器端中的数据库加入多次uid+password=‘xyK88tsD3XBBI3’和其hash值，用户也使用这个id和password进行测试，结果如下：
-
-server.py运行结果：
-
-![image](https://user-images.githubusercontent.com/105548921/180648615-8d7bc0b3-ff1a-4d53-b127-2c6576352497.png)
-
-client.py运行结果：
-
-![image](https://user-images.githubusercontent.com/105548921/180648671-86f8bb71-2484-4162-ae29-2546b10731ab.png)
