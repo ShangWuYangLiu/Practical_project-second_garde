@@ -76,15 +76,12 @@ class MyBaseRequestHandler(StreamRequestHandler):
                 hi = msg2int(upi_hash)
 
                 ki = []
-                print(upi_hash)
                 for i in range(len(upi_hash)):
                     ki.append(upi_hash[i][:2])
-                print(ki)
                 vi = []
                 b=3
                 for i in hi:
                     vi.append(pow(i, b))
-                print(vi)
                 tag=[1]*number
                 divi_hash_key = []
                 divi_hash_value = []
@@ -109,9 +106,6 @@ class MyBaseRequestHandler(StreamRequestHandler):
                 uv=data[2:]
                 uv=int(uv)
                 v=pow(uv,b)
-                print(uk)
-                print(divi_hash_key)
-                print(divi_hash[uk])
                 if uk in divi_hash_key:
                     sdata=(divi_hash[uk],str(v))
                     sdata=str(sdata)
