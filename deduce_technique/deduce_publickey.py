@@ -229,16 +229,21 @@ def deduce_pk_from_sig(signature, msg):
 if __name__ == '__main__':
     print("="*175)
     sk, pk = generate_key()
-    print("正确的公钥为:", pk)
+    #以下都以16进制输出
+    hex_pk=(hex(pk[0])[2:],hex(pk[1])[2:])
+    print("正确的公钥为:", hex_pk)
     print("="*175)
     msg = "202000460012"
     signature = ECDSA_sign(msg, sk)
-    print("对消息签名:", signature)
+    hex_signature=(hex(signature[0])[2:],hex(signature[1])[2:])
+    print("对消息签名:", hex_signature)
     print("="*175)
     pk1,pk2=deduce_pk_from_sig(signature, msg)
+    hex_pk1=(hex(pk1[0])[2:],hex(pk1[1])[2:])
+    hex_pk2=(hex(pk2[0])[2:], hex(pk2[1])[2:])
     print("推测的公钥为:")
-    print("pk1:",pk1)
-    print("pk2:",pk2)
+    print("pk1:",hex_pk1)
+    print("pk2:",hex_pk2)
     print("=" * 175)
     if pk1==pk or pk2==pk:
         print("验证推测是否成功:True")
