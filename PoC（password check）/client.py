@@ -52,34 +52,34 @@ if __name__=='__main__':
         ph = PasswordHasher()
         a = 2
         #随机情况
-
+        '''
         up = get_random_uipi(1, 4, 6, 6, 9)
         myhash = ph.hash(up[0])[31:]
         k = myhash[:2]
         h = msg2int([myhash])
         v = pow(h[0], a)
-
-        #测试泄露情况下的代码
         '''
+        #测试泄露情况下的代码
+
         test_up='xyK88tsD3XBBI3'
         testup_hash=ph.hash(test_up)[54:]
         k = testup_hash[:2]
         h = msg2int([testup_hash])
         v = pow(h[0], a)
-        '''
-        
-        
+
+
+
         sdata=k+str(v)
         client.send(sdata.encode('utf-8'))
         data=client.recv(65536*16).decode('UTF-8', 'ignore')
         data=eval(data)
-        #print(data)
-        #print(len(data))
         print('=' * 75)
         try:
             if len(data) == 2:
                 h_ab = int(data[1])
-                h_b = pow(h_ab, 0.5)
+                h_b = int(pow(h_ab, 0.5))
+                print("S=",data[0])
+                print('h^b=',h_b)
                 if h_b in data[0]:
                     print("查询结果：您的账户信息存在泄露风险")
         except:
