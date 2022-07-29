@@ -1,64 +1,50 @@
 import socket
 import secrets
-import pre_SM2
+from new_sm2 import *
 
-def step1(P1):
-    """step 1 of right
-    :param P1: received P1
-    :return d2:random sub private key
-    :return public_key_P: public key should be published
-    """
-    d2 = secrets.randbelow(pre_SM2.N)
-    tmp = pre_SM2.inv(d2, pre_SM2.N)
-    tmp = pre_SM2.EC_multi(tmp, P1)
-    public_key_P = pre_SM2.EC_sub(tmp, pre_SM2.G)
-    return d2, public_key_P
+def beginAC():
+    server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server.bind(('127.0.0.1', 12345))
+    while 1:
+        # 1:接收P1
+        data, addr = server.recvfrom(1024)
+        message = "IP " +addr[0] + ":" + str(addr[1]) + " Connected..."
+        print(message)
+        data = data.decode()
+        index1 = data.index(',')
+        P1 = (int(data[:index1]), int(data[index1 + 1:]))
 
-def step2(d2, Q1, e):
-    """step 2 of right
-    :param d2: generated in step 1
-    :param Q1: receivced
-    :param e: received
-    :return r, s2, s3
-    """
-    e = int(e, 16)
-    k2 = secrets.randbelow(pre_SM2.N)
-    k3 = secrets.randbelow(pre_SM2.N)
-    Q2 = pre_SM2.EC_multi(k2, pre_SM2.G)
-    tmp = pre_SM2.EC_multi(k3, Q1)
-    tmp = pre_SM2.EC_add(tmp, Q2)
-    x1 = tmp[0]
-    r = (x1 + e) % pre_SM2.N
-    if r == 0:return 'error: r == 0'
-    s2 = d2 * k3 % pre_SM2.N
-    s3 = d2 * (r + k2) % pre_SM2.N
-    return r, s2, s3
+        # 2:生成私钥d，公钥P
+        d2 = secrets.randbelow(N)
+        tmp = mod_inverse(d2, N)
+        tmp = elliptic_mult(tmp, P1)
+        P = elliptic_sub(tmp, G)
 
+        # 3:接收Q1，e并计算r，s2，s3发送给客户端
+        data, addr = server.recvfrom(1024)
+        data = data.decode()
+        index1 = data.index(',')
+        index2 = data.index('&')
+        Q1 = (int(data[:index1]), int(data[index1 + 1:index2]))
+        e = data[index2 + 1:]
+        e = int(e, 16)
+        k2 = secrets.randbelow(N)
+        k3 = secrets.randbelow(N)
+        Q2 = elliptic_mult(k2, G)
+        tmp = elliptic_mult(k3, Q1)
+        tmp = elliptic_add(tmp, Q2)
+        x1 = tmp[0]
+        r = (x1 + e) % N
+        if r==0:
+            print('error')
+            break
+        s2 = d2 * k3 % N
+        s3 = d2 * (r + k2) % N
+        sdata = str(r) + ',' + str(s2) + '&' + str(s3)
+        server.sendto(sdata.encode(), addr)
 
-
-
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(('', 12300))
-
-
-data, addr=s.recvfrom(1024)
-data = data.decode()
-index1 = data.index(',')
-P1 = (int(data[:index1]), int(data[index1 + 1:]))
-d2, public_key_P = step1(P1)
+    server.close()
 
 
-
-data, addr=s.recvfrom(1024)
-data = data.decode()
-index1 = data.index(',')
-index2 = data.index(';')
-Q1 = (int(data[:index1]), int(data[index1 + 1:index2]))
-e = data[index2 + 1:]
-r, s2, s3 = step2(d2, Q1, e)
-data = str(r) + ',' + str(s2) + ';' + str(s3)
-s.sendto(data.encode(), addr)
-s.close( )
-
-print("connect closed")
-
+if __name__=="__main__":
+    beginAC()
