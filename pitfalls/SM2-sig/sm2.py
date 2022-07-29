@@ -202,20 +202,3 @@ def verify(public_key, ID, message, signature):
 
     return R == r
 
-
-if __name__ == '__main__':
-    prikey, pubkey = generate_key()
-    message = "202000460012"
-    print('='*175)
-    print("消息为:",message)
-    print('='*175)
-    print('公钥为：', pubkey)
-    ID = '1234567812345678'#sm2使用固定值
-    Z_A = pre_compute(ID, A, B, G_X, G_Y, pubkey[0], pubkey[1])
-    signature = sign(prikey, message, str(Z_A))
-    print('=' * 175)
-    print("签名为: ", signature)
-    #此处signature中的r、s是数字方便verify
-    if verify(pubkey, ID, message, signature) == 1:
-        print('=' * 175)
-        print('验证签名:True')
