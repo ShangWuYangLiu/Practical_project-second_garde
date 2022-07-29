@@ -12,7 +12,7 @@
 
 (5) Same d and k between ECDSA and Schnorr, leads to leaking d (ECDSA与Schnorr使用相同的d和k而泄露d)
 
-注意：其中1和2还分别根据推测得到的d值进行了消息的伪造并成功通过验签
+注意：其中(1)和(2)还分别根据推测得到的d值进行了消息的伪造并成功通过验签
     
 **实验思路**
 
