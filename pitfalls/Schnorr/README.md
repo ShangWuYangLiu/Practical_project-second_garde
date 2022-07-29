@@ -1,6 +1,7 @@
 # pitfalls_Schnorr
 
 **项目内容**
+
 (1) Leaking k leads to leaking of d (k的泄露会导致泄露d)
 
 (2) Reusing k leads to leaking of d (对不同的消息使用相同的k进行签名会泄露d)
@@ -14,6 +15,7 @@
 注意：其中1和2还分别根据推测得到的d值进行了消息的伪造并成功通过验签
     
 **实验思路**
+
 (1) Leaking k leads to leaking of d (k的泄露会导致泄露d):
 
     由签名算法中s = (k + ed) mod n 推得 d = (s - k) / e
