@@ -3,6 +3,7 @@ import random
 from argon2 import PasswordHasher
 import sympy
 from socket import *
+from gmpy2 import invert
 
 def get_random_strui(number,len_min,len_max):#参数为个数和长度范围
     number_of_strings = number
@@ -45,18 +46,19 @@ def msg2int(msg):
 
 if __name__=='__main__':
     while 1:
-        #连接到服务器，注意ip地址和端口号
+        #获得ID
         client = socket(AF_INET, SOCK_STREAM)
         client.connect(('127.0.0.1', 12301))
         ph = PasswordHasher()
-        #生成自己的私钥（一个素数），为了便于计算，生成一个较小的素数
-        a = sympy.randprime(10 ** 2, 10 ** 3)
+        a = 2
         #随机情况
+
         up = get_random_uipi(1, 4, 6, 6, 9)
         myhash = ph.hash(up[0])[31:]
         k = myhash[:2]
         h = msg2int([myhash])
         v = pow(h[0], a)
+
         #测试泄露情况下的代码
         '''
         test_up='xyK88tsD3XBBI3'
@@ -65,19 +67,23 @@ if __name__=='__main__':
         h = msg2int([testup_hash])
         v = pow(h[0], a)
         '''
-        #发送数据
+        
+        
         sdata=k+str(v)
         client.send(sdata.encode('utf-8'))
         data=client.recv(65536*16).decode('UTF-8', 'ignore')
-        #根据服务器端规定的数据格式解析数据
-        if data[0]==' ':
-            print("您的账户信息暂未泄露")
-        else:
-            data=eval(data)
-            if len(data[0][0])!=1:
-                num = len(data[0])
-                print("查询结果：您的账户信息存在泄露风险,可能有{}个站点的账户信息已经泄露".format(num))
-            else:
-                print("查询结果：您的账户信息存在泄露风险,可能有{}个站点的账户信息已经泄露".format(1))
+        data=eval(data)
+        #print(data)
+        #print(len(data))
+        print('=' * 75)
+        try:
+            if len(data) == 2:
+                h_ab = int(data[1])
+                h_b = pow(h_ab, 0.5)
+                if h_b in data[0]:
+                    print("查询结果：您的账户信息存在泄露风险")
+        except:
+            print("查询结果：您的账户信息暂无泄露风险")
+        print('=' * 75)
         break
     client.close()
