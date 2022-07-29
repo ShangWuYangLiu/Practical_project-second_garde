@@ -15,93 +15,73 @@ N = 1157920892373161954235709850086879078528375642790749043826051631415181614943
 h = 1
 
 
-def inv(a, n):
-    '''求逆'''
+#扩展欧几里得算法
+def extended_euclidean(a, b, arr):
+    if b == 0:
+        arr[0] = 1
+        arr[1] = 0
+        return a
+    g = extended_euclidean(b, a % b, arr)
+    t = arr[0]
+    arr[0] = arr[1]
+    arr[1] = t - int(a / b) * arr[1]
+    return g
 
-    def ext_gcd(a, b, arr):
-        '''扩展欧几里得算法'''
-        if b == 0:
-            arr[0] = 1
-            arr[1] = 0
-            return a
-        g = ext_gcd(b, a % b, arr)
-        t = arr[0]
-        arr[0] = arr[1]
-        arr[1] = t - int(a / b) * arr[1]
-        return g
 
+#求逆
+def mod_inverse(a, n):
     arr = [0, 1, ]
-    gcd = ext_gcd(a, n, arr)
+    gcd = extended_euclidean(a, n, arr)
     if gcd == 1:
         return (arr[0] % n + n) % n
     else:
         return -1
 
 
-# 椭圆曲线加法
-def EC_add(p, q):
-    # 0 means inf
+#椭圆曲线加法运算
+def elliptic_add(p, q):
     if p == 0 and q == 0:
-        return 0  # 0 + 0 = 0
+        return 0
     elif p == 0:
-        return q  # 0 + q = q
+        return q
     elif q == 0:
-        return p  # p + 0 = p
+        return p
     else:
-        if p[0] == q[0]:
-            if (p[1] + q[1]) % P == 0:
-                return 0  # mutually inverse
-            elif p[1] == q[1]:
-                return EC_double(p)
-        elif p[0] > q[0]:  # swap if px > qx
-            tmp = p
+        if p[0] > q[0]:#交换p、q
+            temp = p
             p = q
-            q = tmp
+            q = temp
         r = []
-        slope = (q[1] - p[1]) * inv(q[0] - p[0], P) % P  # 斜率
-        r.append((slope ** 2 - p[0] - q[0]) % P)
-        r.append((slope * (p[0] - r[0]) - p[1]) % P)
+        rel= (q[1] - p[1])*mod_inverse(q[0] - p[0], P) % P
+
+        r.append((rel*rel - p[0] - q[0]) % P)
+        r.append((rel*(p[0] - r[0]) - p[1]) % P)
+
         return (r[0], r[1])
 
-
-def EC_inv(p):
-    """椭圆曲线逆元"""
-    r = [p[0]]
-    r.append(P - p[1])
-    return r
-
-
-# 椭圆曲线减法:p - q
-def EC_sub(p, q):
-    q_inv = EC_inv(q)
-    return EC_add(p, q_inv)
-
-
-# 自加p+p
-def EC_double(p):
+#2P
+def elliptic_double(p):
     r = []
-    slope = (3 * p[0] ** 2 + A) * inv(2 * p[1], P) % P
-    r.append((slope ** 2 - 2 * p[0]) % P)
-    r.append((slope * (p[0] - r[0]) - p[1]) % P)
+
+    rel = (3*p[0]**2 + A)*mod_inverse(2*p[1], P) % P
+
+    r.append((rel*rel - 2*p[0])%P)
+    r.append((rel*(p[0] - r[0]) - p[1])%P)
+
     return (r[0], r[1])
 
-
-# 椭圆曲线多倍点运算
-def EC_multi(s, p):
-    """
-    :param s: 倍数
-    :param p: 点
-    :return: 运算结果
-    """
+#椭圆曲线乘法运算
+def elliptic_mult(s, p):
     n = p
-    r = 0
-    s_bin = bin(s)[2:]
-    s_len = len(s_bin)
+    r = 0 #无穷远点
 
-    for i in reversed(range(s_len)):  # 类快速幂思想
-        if s_bin[i] == '1':
-            r = EC_add(r, n)
-        n = EC_double(n)
+    s_binary = bin(s)[2:]
+    s_length = len(s_binary)
+
+    for i in reversed(range(s_length)):
+        if s_binary[i] == '1':
+            r = elliptic_add(r, n)
+        n = elliptic_double(n)
 
     return r
 
@@ -130,29 +110,30 @@ def get_bit_num(x):
     return 0
 
 
-# 产生公私钥对
-def key_gen():
-    sk = int(secrets.token_hex(32), 16)  # private key
-    pk = EC_multi(sk, G)  # public key
-    return sk, pk
+#生成公私钥对
+def generate_key():
+    private_key = int(secrets.token_hex(32), 16)#生成一个十六进制格式的安全随机文本字符串
+    public_key = elliptic_mult(private_key, G)
+    return private_key, public_key
 
 
 # ECDSA签名
 def ECDSA_sign(m, sk):
-    """ECDSA signature algorithm
+    '''
+
     :param m: message
     :param sk: private key
-    :return signature: (r, s)
-    """
+    :return: (r,s)签名
+    '''
     while 1:
         k = secrets.randbelow(N)  # N is prime, then k <- Zn*
-        R = EC_multi(k, G)
+        R = elliptic_mult(k, G)
         r = R[0] % N  # Rx mod n
         if r != 0:
             break
     e = sm3.sm3_hash(func.bytes_to_list(bytes(m, encoding='utf-8')))  # e = hash(m)
     e = int(e, 16)
-    tmp1 = inv(k, N)
+    tmp1 = mod_inverse(k, N)
     tmp2 = (e + sk * r) % N
     s = tmp1 * tmp2 % N
     return (r, s)
@@ -160,18 +141,19 @@ def ECDSA_sign(m, sk):
 
 # ECDSA验签
 def ECDSA_verify(signature, m, pk):
-    """ECDSA algorithm
-    :param signature: (r, s)
+    '''
+
+    :param signature:(r,s)签名
     :param m: message
     :param pk: public key
-    :return:True or False
-    """
+    :return: True or False
+    '''
     r, s = signature
     e = sm3.sm3_hash(func.bytes_to_list(bytes(m, encoding='utf-8')))  # e = hash(m)
     e = int(e, 16)
-    w = inv(s, N)
-    tmp1 = EC_multi(e * w, G)
-    tmp2 = EC_multi(r * w, pk)
-    dot = EC_add(tmp1, tmp2)
+    w = mod_inverse(s, N)
+    tmp1 = elliptic_mult(e * w, G)
+    tmp2 = elliptic_mult(r * w, pk)
+    dot = elliptic_add(tmp1, tmp2)
     x = dot[0]
     return x == r
