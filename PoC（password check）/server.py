@@ -74,27 +74,44 @@ class MyBaseRequestHandler(StreamRequestHandler):
                 upi[6]='xyK88tsD3XBBI3'
                 upi_hash = myargon2(upi)
                 hi = msg2int(upi_hash)
+
                 ki = []
+                print(upi_hash)
                 for i in range(len(upi_hash)):
                     ki.append(upi_hash[i][:2])
+                print(ki)
                 vi = []
                 b=3
                 for i in hi:
                     vi.append(pow(i, b))
-                divi_hash_key=list(set(ki))#去掉重复的
+                print(vi)
+                tag=[1]*number
+                divi_hash_key = []
                 divi_hash_value = []
                 for i in ki:
-                    temp=[]
-                    for j in range(len(ki)):
-                        if ki[j]==i:
-                            temp.append(vi[j])
-                    divi_hash_value.append(temp)
+                    if ki.count(i)>1 and tag[ki.index(i)]==1:
+                        temp=[]
+                        tmp=0
+                        for j in range(0,ki.count(i)):
+                            index=ki[tmp:].index(i)
+                            temp.append(vi[index+tmp])
+                            tag[index+tmp]=0
+                            tmp=index
+                        divi_hash_key.append(i)
+                        divi_hash_value.append(temp)
+                    elif tag[ki.index(i)]==1:
+                        index=ki.index(i)
+                        divi_hash_key.append(i)
+                        divi_hash_value.append(vi[index])
                 divi_hash = dict(zip(divi_hash_key, divi_hash_value))
                 data = self.request.recv(2048).decode('UTF-8', 'ignore').strip()
                 uk=data[:2]
                 uv=data[2:]
                 uv=int(uv)
                 v=pow(uv,b)
+                print(uk)
+                print(divi_hash_key)
+                print(divi_hash[uk])
                 if uk in divi_hash_key:
                     sdata=(divi_hash[uk],str(v))
                     sdata=str(sdata)
