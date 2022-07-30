@@ -20,7 +20,7 @@
 
 3.implement length extension attack for SM3（个人完成）
 
-路径：SM3_length extension
+路径：SM3/length_extension
 
 4.do your best to optimize SM3 implementation (software)（协作完成:张卓龙阅读论文[1]及撰写小部分代码，刘阳完成代码撰写) 
 
