@@ -3,31 +3,46 @@
 #include "sha256.h"
 using namespace std;
 
+#define number 100000
+
 int main()
 {
 	string check_str = "";
-	vector<string> v;
+	//cout << "输入 Merkle Tree的叶子结点的数据，形式为：a b c d\n以~键作为结束符: " << endl;
+	vector<string> v(number);
 	int i = 0;
-	//便于展示输出的代码
-	while (i<7) //输入叶子节点
+	int count = 0;
+	while (count<number)
 	{
-		string str;
-		str = to_string(i);
-		v.push_back(str);//在vector最后添加一个新元素
+		if (i % 10 == 0)
+		{
+			i = 0;
+		}
+		string str = to_string(i);
 		i++;
+		v.push_back(str);
+		count++;
 	}
-	//10w叶子节点代码
-	//while (i < 10000)
+	
+	//便于展示输出的代码
+	//while (1) //输入叶子节点
 	//{
 	//	string str;
-	//	str = to_string(i);
-	//	v.push_back(str);//在vector最后添加一个新元素
-	//  i++;
+	//	cin >> str;
+	//	if (str != "~")
+	//	{
+	//		v.push_back(str);//在vector最后添加一个新元素
+	//	}
+	//	else
+	//	{
+	//		break;
+	//	}
 	//}
 
 	tree ntree;
 	ntree.buildBaseLeafes(v);
-	cout << "构建Merkle树过程:" << endl << endl;
+	//不显示输出
+	cout << "完成"<<number<<"个叶子节点Merkle树的构建过程:" << endl << endl;
 	ntree.buildTree();
 
 	cout << endl;
@@ -39,7 +54,7 @@ int main()
 
 	if (ntree.verify(check_str))//验证有无这个节点 树有无改变
 	{
-		cout << endl << endl;
+		cout << endl;
 		cout << "Merkle树上存在验证的数据的叶子结点" << endl;
 	}
 	else
