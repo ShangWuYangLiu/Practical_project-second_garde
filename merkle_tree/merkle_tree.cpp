@@ -14,15 +14,12 @@ int main()
 	int count = 0;
 	while (count<number)
 	{
-		if (i % 10 == 0)
-		{
-			i = 0;
-		}
 		string str = to_string(i);
 		i++;
 		v.push_back(str);
 		count++;
 	}
+	cout << "初始化后的叶子节点为0-" << number-1<<endl;
 	
 	//便于展示输出的代码
 	//while (1) //输入叶子节点
@@ -42,7 +39,7 @@ int main()
 	tree ntree;
 	ntree.buildBaseLeafes(v);
 	//不显示输出
-	cout << "完成"<<number<<"个叶子节点Merkle树的构建过程:" << endl << endl;
+	cout << "完成"<<number<<"个叶子节点Merkle树的构建过程。" << endl << endl;
 	ntree.buildTree();
 
 	cout << endl;
