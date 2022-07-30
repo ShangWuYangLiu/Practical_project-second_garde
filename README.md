@@ -78,13 +78,13 @@
 
 7.Write a circuit to prove that your CET6 grade is larger than 425.
 
-  a.Your grade info is like (cn_id, grade, year, sig_by_moe). These grades are published as commitments onchain by MoE.
+    a.Your grade info is like (cn_id, grade, year, sig_by_moe). These grades are published as commitments onchain by MoE.
 
-  b.When you got an interview from an employer, you can prove to them that you have passed the exam without letting them know the exact grade.
+    b.When you got an interview from an employer, you can prove to them that you have passed the exam without letting them know the exact grade.
 
-  The commitment scheme used by MoE is SHA256-based.
+    The commitment scheme used by MoE is SHA256-based.
 
-  a. commit = SHA256(cn_id, grade, year, sig_by_moe, r)
+    a.commit = SHA256(cn_id, grade, year, sig_by_moe, r)
 
 **参考文献**
 
