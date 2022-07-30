@@ -58,7 +58,7 @@
 
 路径：forge_signature
 
-13.Find a 64-byte message under some k fulfilling that their hash value is symmetrical（协作完成：张卓龙负责查阅资料理解算法原理，描述算法步骤；刘阳负责代码的实现）
+13.Find a 64-byte message under some k fulfilling that their hash value is symmetrical（协作完成：张卓龙负责查阅资料[3]和PPT理解算法原理，描述算法步骤；刘阳负责代码的实现）
 
 路径：symmetrical_hash_value
 
@@ -91,3 +91,6 @@
 [1] 杨先伟,康红娟.SM3杂凑算法的软件快速实现研究[J].智能系统学报,2015,10(06):954-959.
 
 [2] https://blog.csdn.net/qq_33439662/article/details/122590298
+
+[3] https://github.com/cmuratori/meow_hash
+
