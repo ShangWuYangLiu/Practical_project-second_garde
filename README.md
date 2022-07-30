@@ -24,7 +24,7 @@
 
 4.do your best to optimize SM3 implementation (software)（协作完成:张卓龙阅读论文[1]及撰写小部分代码，刘阳完成代码撰写) 
 
-路径：SM3_optimize
+路径：SM3/optimize
 
 5.Impl Merkle Tree following RFC6962（协作完成:张卓龙阅读RFC文档及撰写小部分代码，刘阳完成代码撰写)
 
