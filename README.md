@@ -58,6 +58,10 @@
 
 路径：forge_signature
 
+13.Find a 64-byte message under some k fulfilling that their hash value is symmetrical（协作完成：张卓龙负责查阅资料理解算法原理，描述算法步骤；刘阳负责代码的实现）
+
+路径：symmetrical_hash_value
+
 **未完成的项目**
 
 1.Try to Implement this scheme
@@ -72,9 +76,7 @@
 
 6.Find a key with hash value “sdu_cst_20220610” under a message composed of your name followed by your student ID. For example, “San Zhan 202000460001”.
 
-7.Find a 64-byte message under some k fulfilling that their hash value is symmetrical.
-
-8.Write a circuit to prove that your CET6 grade is larger than 425.
+7.Write a circuit to prove that your CET6 grade is larger than 425.
 
   a.Your grade info is like (cn_id, grade, year, sig_by_moe). These grades are published as commitments onchain by MoE.
 
