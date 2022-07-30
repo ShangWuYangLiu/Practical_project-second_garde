@@ -22,11 +22,11 @@
 
 路径：SM3_length extension
 
-4.do your best to optimize SM3 implementation (software)（协作完成:张卓龙阅读论文[1]及撰写小部分代码,刘阳完成代码撰写) 
+4.do your best to optimize SM3 implementation (software)（协作完成:张卓龙阅读论文[1]及撰写小部分代码，刘阳完成代码撰写) 
 
 路径：SM3_optimize
 
-5.Impl Merkle Tree following RFC6962（协作完成:张卓龙阅读RFC文档及撰写小部分代码,刘阳完成代码撰写)
+5.Impl Merkle Tree following RFC6962（协作完成:张卓龙阅读RFC文档及撰写小部分代码，刘阳完成代码撰写)
 
 路径：merkle_tree
 
@@ -38,7 +38,7 @@
 
 路径：SM2
 
-8.verify the above pitfalls with proof-of-concept cod（协作完成）
+8.verify the above pitfalls with proof-of-concept cod（协作完成：刘阳完成算法上的推导，张卓龙完成代码撰写）
 
 路径：pitfalls
 
